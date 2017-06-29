@@ -13,7 +13,7 @@ namespace Xamarin.iOS.ClusterKit
     {
         private const double kCKMarginFactorWorld = -1;
         private List<CKCluster> clusters;
-        private ICKMap map;
+        private MKMapView map;
 
         public CKClusterAlgorithm Algorithm { get; set; }
 
@@ -75,7 +75,7 @@ namespace Xamarin.iOS.ClusterKit
             this.Clusters = new List<CKCluster>();
         }
 
-        public void SetMap(ICKMap map)
+        public void SetMap(MKMapView map)
         {
             this.map = map;
             this.VisibleMapRect = map.VisibleMapRect;
@@ -210,7 +210,7 @@ namespace Xamarin.iOS.ClusterKit
                 clusterMapRect = visibleMapRect.Inset(-this.MarginFactor * visibleMapRect.Width, -this.MarginFactor * visibleMapRect.Height);
             }
 
-            double zoom = this.map.Zoom;
+            double zoom = this.map.GetZoom();
             var algorithm = (zoom < this.MaxZoomLevel) ? this.Algorithm : new CKClusterAlgorithm();
             var clusters = algorithm.ClustersInRect(clusterMapRect, zoom, this.Tree);
             var toRemove = this.clusters.ToList();

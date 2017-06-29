@@ -15,7 +15,7 @@ namespace Sample.ClusterKit
     public partial class MyViewController : UIViewController, IMKMapViewDelegate
     {
         [Outlet]
-        public CKMapView MapView { get; set; }
+        public MKMapView MapView { get; set; }
 
         public MyViewController() : base("MyViewController", null)
         {
@@ -24,16 +24,14 @@ namespace Sample.ClusterKit
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
-            // Perform any additional setup after loading the view, typically from a nib.
 
-            var alg = new CKNonHierarchicalDistanceBasedAlgorithm();
-            alg.CellSize = 200;
+            var algorithm = new CKNonHierarchicalDistanceBasedAlgorithm();
+            algorithm.CellSize = 200;
 
-            this.MapView.ClusterManager.Algorithm = alg;
-            this.MapView.ClusterManager.MarginFactor = 1;
+            this.MapView.GetClusterManager().Algorithm = algorithm;
+            this.MapView.GetClusterManager().MarginFactor = 1;
 
             this.MapView.Delegate = this;
-            //this.MapView.GetViewForAnnotation = this.GetViewForAnnotation;
 
             var paris = new CLLocationCoordinate2D(48.853, 2.35);
             this.MapView.SetCenterCoordinate(paris, false);
@@ -49,7 +47,7 @@ namespace Sample.ClusterKit
         {
             var json = File.ReadAllText("static.json");
             var c = JsonConvert.DeserializeObject<RootObject>(json);
-            this.MapView.ClusterManager.Annotations = c.features
+            this.MapView.GetClusterManager().Annotations = c.features
                 .Select(
                     x => new CKAnnotation(new CLLocationCoordinate2D(x.geometry.coordinates[1], x.geometry.coordinates[0]))
                     {
@@ -104,24 +102,19 @@ namespace Sample.ClusterKit
         [Export("mapView:regionDidChangeAnimated:")]
         public void RegionChanged(MKMapView mapView, bool animated)
         {
-            if (mapView is CKMapView clusterMap)
-            {
-                clusterMap.ClusterManager.UpdateClustersIfNeeded();
-            }
+            mapView.GetClusterManager().UpdateClustersIfNeeded();
         }
 
         [Export("mapView:didSelectAnnotationView:")]
         public void DidSelectAnnotationView(MKMapView mapView, MKAnnotationView view)
         {
-            var clusterMapView = mapView as CKMapView;
             var cluster = view.Annotation as CKCluster;
-            if (cluster != null && clusterMapView != null)
+            if (cluster != null )
             {
                 if (cluster.Annotations.Count > 1)
                 {
                     var insets = new UIEdgeInsets(20, 20, 20, 20);
-                    clusterMapView.ShowCluster(cluster, insets, true);
-
+                    mapView.ShowCluster(cluster, insets, true);
                 }
             }
         }

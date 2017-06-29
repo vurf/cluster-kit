@@ -2,42 +2,37 @@
 using MapKit;
 using UIKit;
 using CoreLocation;
-using Foundation;
+using ObjCRuntime;
 
 namespace Xamarin.iOS.ClusterKit
 {
-    [Register("CKMapView")]
-    public class CKMapView : MKMapView, ICKMap
+    [Category(typeof(MKMapView))]
+    public static class MKMapViewExt
     {
-        private CKClusterManager clusterManager;
+        private static CKClusterManager clusterManager;
 
-        public CKMapView(IntPtr handle) : base(handle)
+        public static double GetZoom(this MKMapView map)
         {
-
+            return Math.Log(360 * ((map.Bounds.Width / 256) / map.Region.Span.LongitudeDelta), 2);
         }
 
-        public CKClusterManager ClusterManager
+        public static CKClusterManager GetClusterManager(this MKMapView map)
         {
-            get
+            if (clusterManager == null)
             {
-                if (clusterManager == null)
-                {
-                    clusterManager = new CKClusterManager();
-                    clusterManager.SetMap(this);
-                }
-
-                return clusterManager;
+                clusterManager = new CKClusterManager();
+                clusterManager.SetMap(map);
             }
+
+            return clusterManager;
         }
 
-        public double Zoom => Math.Log(360 * ((this.Frame.Width / 256) / this.Region.Span.LongitudeDelta), 2);
-
-        public void ShowCluster(CKCluster cluster, bool animated)
+        public static void ShowCluster(this MKMapView map, CKCluster cluster, bool animated)
         {
-            this.ShowCluster(cluster, UIEdgeInsets.Zero, animated);
+            ShowCluster(map, cluster, UIEdgeInsets.Zero, animated);
         }
 
-        public void ShowCluster(CKCluster cluster, UIEdgeInsets insets, bool animated)
+        public static void ShowCluster(this MKMapView map, CKCluster cluster, UIEdgeInsets insets, bool animated)
         {
             MKMapRect zoomRect = MKMapRect.Null;
 
@@ -49,45 +44,45 @@ namespace Xamarin.iOS.ClusterKit
                 zoomRect = MKMapRect.Union(zoomRect, pointRect);
             }
 
-            this.SetVisibleMapRect(zoomRect, insets, animated);
+            map.SetVisibleMapRect(zoomRect, insets, animated);
         }
 
-        public void MoveCluster(CKCluster cluster, CLLocationCoordinate2D from, CLLocationCoordinate2D to, UICompletionHandler completion)
+        public static void MoveCluster(this MKMapView map, CKCluster cluster, CLLocationCoordinate2D from, CLLocationCoordinate2D to, UICompletionHandler completion)
         {
             cluster.SetCoordinate(from);
 
-            if (this.ClusterManager.Delegate != null)
+            if (GetClusterManager(map).Delegate != null)
             {
-                this.ClusterManager.Delegate.ClusterManager(this.ClusterManager, () => { cluster.SetCoordinate(to); }, completion);
+                GetClusterManager(map).Delegate.ClusterManager(GetClusterManager(map), () => { cluster.SetCoordinate(to); }, completion);
             }
             else
             {
-                UIView.Animate(this.ClusterManager.AnimationDuration,
+                UIView.Animate(GetClusterManager(map).AnimationDuration,
                                0,
-                               this.ClusterManager.AnimationOptions,
+                               GetClusterManager(map).AnimationOptions,
                                () => { cluster.SetCoordinate(to); },
                                () => completion?.Invoke(true));
             }
         }
 
-        public void AddCluster(CKCluster cluster)
+        public static void AddCluster(this MKMapView map, CKCluster cluster)
         {
-            this.AddAnnotation(cluster);
+            map.AddAnnotation(cluster);
         }
 
-        public void RemoveCluster(CKCluster cluster)
+        public static void RemoveCluster(this MKMapView map, CKCluster cluster)
         {
-            this.RemoveAnnotation(cluster);
+            map.RemoveAnnotation(cluster);
         }
 
-        public void SelectCluster(CKCluster cluster, bool animated)
+        public static void SelectCluster(this MKMapView map, CKCluster cluster, bool animated)
         {
-            this.SelectAnnotation(cluster, animated);
+            map.SelectAnnotation(cluster, animated);
         }
 
-        public void DeselectCluster(CKCluster cluster, bool animated)
+        public static void DeselectCluster(this MKMapView map, CKCluster cluster, bool animated)
         {
-            this.DeselectAnnotation(cluster, animated);
+            map.DeselectAnnotation(cluster, animated);
         }
     }
 }

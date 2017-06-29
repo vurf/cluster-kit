@@ -48,7 +48,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CKCluster.cs" />
     <Compile Include="CKClusterManager.cs" />
-    <Compile Include="ICKMap.cs" />
     <Compile Include="MKMapClusterExtension.cs" />
     <Compile Include="Algorithms\CKClusterAlgorithm.cs" />
     <Compile Include="Algorithms\CKGridBasedAlgorithm.cs" />
