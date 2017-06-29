@@ -46,8 +46,8 @@ ClusterKit is unavailable through [Nuget](http://cocoapods.org).
 
 ```C#
 var algorithm = new CKNonHierarchicalDistanceBasedAlgorithm();
-this.MapView.ClusterManager.Algorithm = algorithm;
-this.MapView.ClusterManager.Annotations = annotations;
+this.MapView.GetClusterManager().Algorithm = algorithm;
+this.MapView.GetClusterManager().Annotations = annotations;
 ```
 
 ##### Handle interactions in the map view's delegate
@@ -56,24 +56,19 @@ this.MapView.ClusterManager.Annotations = annotations;
 [Export("mapView:regionDidChangeAnimated:")]
 public void RegionChanged(MKMapView mapView, bool animated)
 {
-    if (mapView is CKMapView clusterMap)
-    {
-        clusterMap.ClusterManager.UpdateClustersIfNeeded();
-    }
+    mapView.GetClusterManager().UpdateClustersIfNeeded();
 }
 
 [Export("mapView:didSelectAnnotationView:")]
 public void DidSelectAnnotationView(MKMapView mapView, MKAnnotationView view)
 {
-    var clusterMapView = mapView as CKMapView;
     var cluster = view.Annotation as CKCluster;
     if (cluster != null && clusterMapView != null)
     {
         if (cluster.Annotations.Count > 1)
         {
             var insets = new UIEdgeInsets(20, 20, 20, 20);
-            clusterMapView.ShowCluster(cluster, insets, true);
-
+            mapView.ShowCluster(cluster, insets, true);
         }
     }
 }
